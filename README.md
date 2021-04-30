@@ -4,7 +4,8 @@ SSHCommandExecutor is a Java based project. Where, On clicking the button connec
 
 ## Application UI
 
-![screenshot](app_screen.png)
+![Optional Text](../master/screenshot/app_screen.png)
+
 
 ## Installation
 
