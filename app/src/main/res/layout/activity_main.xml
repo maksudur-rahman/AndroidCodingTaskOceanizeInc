@@ -18,16 +18,19 @@
             android:layout_height="match_parent"
             android:scrollbars="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-        <TextView
+        <LinearLayout
             android:background="@color/black"
-            android:id="@+id/sshOutputTV"
-            android:textSize="18sp"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:layout_margin="10dp"
             android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+            <ListView
+                android:visibility="gone"
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/editText1" >
+            </ListView>
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

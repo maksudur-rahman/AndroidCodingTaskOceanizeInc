@@ -14,10 +14,16 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.oceanizeandroidcodingtask.adapter.ItemAdapter;
+import com.example.oceanizeandroidcodingtask.adapter.ShellItemAdapter;
 import com.example.oceanizeandroidcodingtask.model.Item;
 import com.example.oceanizeandroidcodingtask.viewmodel.ItemViewModel;
 import com.jcraft.jsch.ChannelExec;
@@ -39,16 +45,27 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
     private ArrayList<Item> itemArrayList;
     private ItemAdapter adapter;
     private ItemViewModel itemViewModel;
-    private TextView ssOutputTV;
+    private ListView listView;
+    private ShellItemAdapter shellItemAdapter;
+    private ArrayList<String> items = new ArrayList<String>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ssOutputTV = findViewById(R.id.sshOutputTV);
+       //initialize view
+        initializeView();
         // View Model
         itemViewModel = ViewModelProviders.of(this).get(ItemViewModel.class);
         getSSItemsData();
+    }
+
+    private void initializeView() {
+        recyclerView = findViewById(R.id.recycler_view);
+        listView = findViewById(R.id.listView);
+        shellItemAdapter = new ShellItemAdapter(this,items);
+        listView.setAdapter(shellItemAdapter);
     }
 
     public void getSSItemsData() {
@@ -62,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
     }
 
     public void showRecyclerViewData() {
-        recyclerView = findViewById(R.id.recycler_view);
         adapter = new ItemAdapter(this,itemArrayList,this);
         GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(manager);
@@ -70,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
         adapter.notifyDataSetChanged();
     }
 
+    @SuppressLint("ResourceAsColor")
     public void executeRemoteCommand(Item item) {
 
         try{
@@ -99,6 +116,9 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
             InputStream err = channelssh.getExtInputStream();
             channelssh.connect();
             //wait for the "exec" channel to close (it closes once the command finishes).
+            //One has to read the output continuously, while waiting for the command to finish. Otherwise,
+            // if the command produces enough output to fill in an output buffer, the command will hang,
+            // waiting for the buffer to be consumed, what never happens. So you get a deadlock.
             byte[] tmp = new byte[1024];
             while (true) {
                 while (in.available() > 0) {
@@ -127,9 +147,11 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
             // Sleep needed in order to wait long enough to get result back.
             //Thread.sleep(1_000);
             channelssh.disconnect();
-
+            items.add(">>"+outputBuffer.toString());
+            shellItemAdapter.notifyDataSetChanged();
             //Log.v("Output: ", baos.toString());
-            ssOutputTV.setText(outputBuffer.toString());
+            //ssOutputTV.setText(outputBuffer.toString());
+            //shellOutputTV.setText(outputBuffer.toString()+"");
         }
         catch(JSchException | IOException e){
             // show the error in the UI
@@ -137,12 +159,15 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
                     "Check WIFI or Server! Error : "+e.getMessage(),
                     Snackbar.LENGTH_LONG)
                     .setDuration(20000).setAction("Action", null).show();*/
-            ssOutputTV.setText(e.getMessage()+"");
+            //ssOutputTV.setText(e.getMessage()+"");
+            items.add(">>"+e.getMessage());
+            shellItemAdapter.notifyDataSetChanged();
         }
     }
 
     @Override
     public void onItemClick(Item item) {
+        listView.setVisibility(View.VISIBLE);
         Toast.makeText(this, item.getName()+" Clicked", Toast.LENGTH_SHORT).show();
         ExecutorService executors = Executors.newSingleThreadExecutor();
         executors.execute(new Runnable() {
@@ -156,5 +181,11 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+        super.onBackPressed();
     }
 }
