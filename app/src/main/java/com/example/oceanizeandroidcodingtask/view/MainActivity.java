@@ -1,8 +1,10 @@
-package com.example.oceanizeandroidcodingtask;
+package com.example.oceanizeandroidcodingtask.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.example.oceanizeandroidcodingtask.R;
 
 public class MainActivity extends AppCompatActivity {
 
