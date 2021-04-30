@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
         adapter.notifyDataSetChanged();
     }
 
-    @SuppressLint("ResourceAsColor")
+
     public void executeRemoteCommand(Item item) {
 
         try{
