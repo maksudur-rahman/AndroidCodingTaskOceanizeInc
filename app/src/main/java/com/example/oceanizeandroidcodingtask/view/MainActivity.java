@@ -13,13 +13,10 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.oceanizeandroidcodingtask.adapter.ItemAdapter;
@@ -31,7 +28,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,6 +38,7 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemListener{
     protected RecyclerView recyclerView;
+    private ProgressBar progressBar;
     private ArrayList<Item> itemArrayList;
     private ItemAdapter adapter;
     private ItemViewModel itemViewModel;
@@ -58,16 +55,22 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
         initializeView();
         // View Model
         itemViewModel = ViewModelProviders.of(this).get(ItemViewModel.class);
+        progressBar.setVisibility(View.VISIBLE);
         getSSItemsData();
     }
 
     private void initializeView() {
+        progressBar = findViewById(R.id.progress_bar);
         recyclerView = findViewById(R.id.recycler_view);
         listView = findViewById(R.id.listView);
         shellItemAdapter = new ShellItemAdapter(this,items);
         listView.setAdapter(shellItemAdapter);
     }
-
+    /**
+     * get Item Details from api
+     *
+     * @param @null
+     */
     public void getSSItemsData() {
         itemViewModel.getAllSSList().observe(this, new Observer<List<Item>>() {
             @Override
@@ -79,7 +82,10 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
     }
 
     public void showRecyclerViewData() {
+        progressBar.setVisibility(View.GONE);
+        // adapter
         adapter = new ItemAdapter(this,itemArrayList,this);
+        // use a Grid layout manager
         GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
@@ -104,8 +110,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
             // SSH Channel
             ChannelExec channelssh = (ChannelExec)
                     session.openChannel("exec");
-            /*ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            channelssh.setOutputStream(baos);*/
 
             // Execute command
             channelssh.setCommand(item.getCommand());
@@ -149,22 +153,15 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
             channelssh.disconnect();
             items.add(">>"+outputBuffer.toString());
             shellItemAdapter.notifyDataSetChanged();
-            //Log.v("Output: ", baos.toString());
-            //ssOutputTV.setText(outputBuffer.toString());
-            //shellOutputTV.setText(outputBuffer.toString()+"");
         }
         catch(JSchException | IOException e){
             // show the error in the UI
-            /*Snackbar.make(getActivity().findViewById(android.R.id.content),
-                    "Check WIFI or Server! Error : "+e.getMessage(),
-                    Snackbar.LENGTH_LONG)
-                    .setDuration(20000).setAction("Action", null).show();*/
-            //ssOutputTV.setText(e.getMessage()+"");
             items.add(">>"+e.getMessage());
             shellItemAdapter.notifyDataSetChanged();
         }
     }
 
+    //RecyclerView Item click
     @Override
     public void onItemClick(Item item) {
         listView.setVisibility(View.VISIBLE);
@@ -183,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemL
         });
     }
 
+    //back button pressed
     @Override
     public void onBackPressed() {
         finish();
