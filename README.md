@@ -1,6 +1,6 @@
 # SSHCommandExecutor
 
-SSHCommandExecutor is a Java based project. Where, On clicking the button connect to the SSH server with “host”, “port”, “username” and “password”. And then execute the “command” in the connected ssh server.
+SSHCommandExecutor is a Java based Android application. Where, On clicking the button connect to the SSH server with “host”, “port”, “username” and “password”. And then execute the “command” in the connected ssh server.
 
 ## Application UI
 
